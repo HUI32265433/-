@@ -30,21 +30,32 @@ jobs:
         pip install --upgrade pip
         pip install cython==0.29.36 buildozer
 
-    - name: Initialize or fix buildozer.spec
+    - name: Direct create clean buildozer.spec
       run: |
-        if [ ! -f buildozer.spec ]; then
-          buildozer init
-        fi
-        # 核心修改：锁定稳定版 API 33 和 NDK 25b，避免触发高版本协议卡住
-        sed -i 's/#android.permissions =.*/android.permissions = INTERNET/g' buildozer.spec
-        sed -i 's/requirements =.*/requirements = python3,kivy,openssl,certifi/g' buildozer.spec
-        sed -i 's/#android.api =.*/android.api = 33/g' buildozer.spec
-        sed -i 's/#android.minapi =.*/android.minapi = 21/g' buildozer.spec
-        sed -i 's/#android.ndk =.*/android.ndk = 25b/g' buildozer.spec
+        cat << 'EOF' > buildozer.spec
+        [app]
+        title = Momochi
+        package.name = momochi
+        package.domain = org.momochi
+        source.dir = .
+        source.include_exts = py,png,jpg,kv,atlas
+        version = 0.1
+        requirements = python3,kivy,openssl,certifi
+        orientation = portrait
+        fullscreen = 0
+        android.permissions = INTERNET
+        android.api = 33
+        android.minapi = 21
+        android.ndk = 25b
+        android.accept_sdk_license = True
+        [buildozer]
+        log_level = 2
+        warn_on_root = 0
+        EOF
 
     - name: Build with Buildozer
       run: |
-        buildozer -v android debug
+        yes | buildozer -v android debug
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
