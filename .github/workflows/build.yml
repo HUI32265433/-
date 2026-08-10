@@ -23,7 +23,7 @@ jobs:
         sudo apt-get install -y \
           git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config \
           zlib1g-dev libncurses5-dev libncursesw5-dev libffi-dev libssl-dev \
-          build-essential ccache libltdl-dev android-sdk-build-tools
+          build-essential ccache libltdl-dev
 
     - name: Install Buildozer and Cython
       run: |
@@ -35,8 +35,11 @@ jobs:
         if [ ! -f buildozer.spec ]; then
           buildozer init
         fi
+        # 核心修改：锁定稳定版 API 33 和 NDK 25b，避免触发高版本协议卡住
         sed -i 's/#android.permissions =.*/android.permissions = INTERNET/g' buildozer.spec
         sed -i 's/requirements =.*/requirements = python3,kivy,openssl,certifi/g' buildozer.spec
+        sed -i 's/#android.api =.*/android.api = 33/g' buildozer.spec
+        sed -i 's/#android.minapi =.*/android.minapi = 21/g' buildozer.spec
         sed -i 's/#android.ndk =.*/android.ndk = 25b/g' buildozer.spec
 
     - name: Build with Buildozer
